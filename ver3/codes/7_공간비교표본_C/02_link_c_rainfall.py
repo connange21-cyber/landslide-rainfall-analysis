@@ -25,7 +25,7 @@ def main():
     before=[fingerprint(p) for p in inputs]
     c=pd.read_parquet(inputs[0]);config=json.loads(inputs[1].read_text(encoding='utf-8'))
     history=pd.read_excel(inputs[2],sheet_name='location_history')
-    spec=importlib.util.spec_from_file_location('shared_rain_qc',V3/'codes/6/04_build_hourly_comparison.py')
+    spec=importlib.util.spec_from_file_location('shared_rain_qc',V3/'codes/6_시간비교표본_B/04_build_hourly_comparison.py')
     loader=importlib.util.module_from_spec(spec);spec.loader.exec_module(loader)
     dates=set()
     for r in c.itertuples():

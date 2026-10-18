@@ -16,7 +16,7 @@ from rasterio.windows import Window, bounds as window_bounds, transform as windo
 from shapely.geometry import box
 
 V3=Path(__file__).resolve().parents[2]
-sys.path.insert(0,str(V3/'codes/5'))
+sys.path.insert(0,str(V3/'codes/5_DEM_경사분석'))
 from dem import Mosaic,horn,require_vertical,Progress
 MOSAIC=None
 CONFIG=None

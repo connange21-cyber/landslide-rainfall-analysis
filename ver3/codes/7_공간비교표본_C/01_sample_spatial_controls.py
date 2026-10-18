@@ -10,7 +10,7 @@ import geopandas as gpd
 from shapely.geometry import box
 from shapely.strtree import STRtree
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'1'))
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'1_산사태_관측소연결'))
 from common import V3, fingerprint, write_json
 from spatial import StationEngine
 

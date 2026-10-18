@@ -12,7 +12,7 @@ from common import ROOT, V3, HOUR, save, write_json, run_stage
 
 def spatial_units(links, mode):
     """RI where child boundaries exist; EMD only where no RI boundary exists."""
-    sys.path.insert(0, str(V3/'codes/1'))
+    sys.path.insert(0, str(V3/'codes/1_산사태_관측소연결'))
     from spatial import boundaries
     import geopandas as gpd
     ri, emd, _, _ = boundaries(V3/'base')

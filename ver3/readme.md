@@ -23,7 +23,7 @@ Landslide_ver2/
 │  │  ├─ stations/
 │  │  ├─ boundaries/
 │  │  └─ DEM/5m/              외부 DEM을 가리키는 Junction
-│  ├─ codes/1~4/              각 단계 코드
+│  ├─ codes/<단계번호>_<작업명>/              각 단계 코드
 │  │  └─ (공통 I/O는 codes/common.py)
 │  ├─ config/                 공통 경로·분석 설정
 │  ├─ output/<코드번호>/      해당 단계의 가공 결과
@@ -150,11 +150,11 @@ Agent는 대규모 변경 전에 대상·이유·영향·범위를 설명하고 
 프로젝트 루트에서 실행한다.
 
 ```powershell
-.\.venv\Scripts\python.exe ver3\codes\1\01_link_landslides_stations.py
-.\.venv\Scripts\python.exe ver3\codes\2\02_build_rainfall.py
-.\.venv\Scripts\python.exe ver3\codes\3\03_build_rainfall_events.py
-.\.venv\Scripts\python.exe ver3\codes\4\04_build_cumulative_rainfall.py
-.\.venv\Scripts\python.exe ver3\codes\4\verify_rainfall.py --full
+.\.venv\Scripts\python.exe ver3\codes\1_산사태_관측소연결\01_link_landslides_stations.py
+.\.venv\Scripts\python.exe ver3\codes\2_시간강우_구축\02_build_rainfall.py
+.\.venv\Scripts\python.exe ver3\codes\3_강우이벤트_분리\03_build_rainfall_events.py
+.\.venv\Scripts\python.exe ver3\codes\4_행정구역_누적강우\04_build_cumulative_rainfall.py
+.\.venv\Scripts\python.exe ver3\codes\4_행정구역_누적강우\verify_rainfall.py --full
 ```
 
 - `config/rainfall.json`에서 경로·이벤트 분리·누적기간을 관리한다. 1단계 `--limit 2`는 위치등급별 최대 2건을 시험한다. 2~4단계는 `--smoke`로 앞 단계의 시험 결과를 읽는다.
@@ -190,13 +190,13 @@ Agent는 대규모 변경 전에 대상·이유·영향·범위를 설명하고 
 코드 작성 및 합성자료 검증 완료. 실제 DEM 분석은 **높이 단위 확인 대기**다. 파일 3개 표본의 높이 단위 메타데이터가 없고 사용자가 단위 확인 필요로 답했으므로 표고를 미터라고 가정하지 않았다. 입력 경로는 `config/slope.json`이며, 원자료 설명을 확인한 뒤 `vertical_scale_to_m`와 `vertical_unit_confirmation`에 변환계수·확인 근거를 기록해야 실행된다. 1은 원래 높이가 미터라는 확인이 있을 때만 설정한다.
 
 ```powershell
-.\.venv\Scripts\python.exe ver3\codes\5\verify_slope.py
+.\.venv\Scripts\python.exe ver3\codes\5_DEM_경사분석\verify_slope.py
 # 높이 단위 확인 및 설정 후, 먼저 일부 지역 시험
-.\.venv\Scripts\python.exe ver3\codes\5\01_extract_slope.py --limit 3
-.\.venv\Scripts\python.exe ver3\codes\5\02_summarize_slope.py --smoke
+.\.venv\Scripts\python.exe ver3\codes\5_DEM_경사분석\01_extract_slope.py --limit 3
+.\.venv\Scripts\python.exe ver3\codes\5_DEM_경사분석\02_summarize_slope.py --smoke
 # 시험 결과 확인 후 전체 발생지역 처리
-.\.venv\Scripts\python.exe ver3\codes\5\01_extract_slope.py
-.\.venv\Scripts\python.exe ver3\codes\5\02_summarize_slope.py
+.\.venv\Scripts\python.exe ver3\codes\5_DEM_경사분석\01_extract_slope.py
+.\.venv\Scripts\python.exe ver3\codes\5_DEM_경사분석\02_summarize_slope.py
 ```
 
 - 01: DEM 타일 헤더 인덱스를 만들고, 04의 공간 연결이 가능한 발생지역 1,724개를 기본 대상으로 필요한 블록만 읽는다. `--unit-id`를 반복 지정하여 이후 비교표본 공간을 선택할 수 있다. 기존 경사 파일 교체는 `--overwrite`가 필요하다.
@@ -237,7 +237,7 @@ Agent는 대규모 변경 전에 대상·이유·영향·범위를 설명하고 
 - 같은 숫자 도엽의 `_projected.img`가 있으면 원본 `.img` 대신 선택한다. 두 파일을 함께 사용하지 않는다. 현재 34708 폴더 8개가 해당한다.
 - 출력 CRS는 config/slope.json의 `target_crs: EPSG:5186`. 원본 CRS를 읽어 실제 좌표 변환하며, 원본 헤더에 5186을 덮어 정의하지 않는다. 사용자 정의 GRS80도 이름 비교만으로 중단하지 않는다.
 - 원본 datum 정의의 정확성은 독립 확인하지 않았으며 인덱스 로그에 미확인 상태로 기록한다. 서로 다른 CRS 또는 어긋난 격자는 창별 쌍선형 보간한다. 작은 숫자 도엽의 유효값 우선 규칙은 유지한다.
-- 01 실행: `.\.venv\Scripts\python.exe ver3\codes\5\01_extract_slope.py`. COMPLETE 이후 같은 방식으로 `02_summarize_slope.py` 실행. 이번 수정 후 실제 DEM 계산은 사용자가 실행한다.
+- 01 실행: `.\.venv\Scripts\python.exe ver3\codes\5_DEM_경사분석\01_extract_slope.py`. COMPLETE 이후 같은 방식으로 `02_summarize_slope.py` 실행. 이번 수정 후 실제 DEM 계산은 사용자가 실행한다.
 
 
 ### 2026-10-07 경사 자료 부족 구역 잠정 제외
@@ -246,7 +246,7 @@ Agent는 대규모 변경 전에 대상·이유·영향·범위를 설명하고 
 
 
 ### 2026-10-07 06 비교표본 준비 완료
-- 실행 코드: `codes/6/01_prepare_sampling_inventory.py` (독립 실행, 기존 06 결과 교체는 --overwrite 필요). 결과는 `output/06/full`, 로그는 `log/06/full`.
+- 실행 코드: `codes/6_시간비교표본_B/01_prepare_sampling_inventory.py` (독립 실행, 기존 06 결과 교체는 --overwrite 필요). 결과는 `output/06/full`, 로그는 `log/06/full`.
 - A:B:C=1:1:1은 발생 후보 / 같은 구역 다른 강우 이벤트 / 같은 이벤트 시기 다른 구역의 설계다. 이번에는 A 기준표와 강우 보유 현황만 만들었다. 원래 후보 관계를 보존하며 아직 표본 추출이나 독립 사건 수 확정은 하지 않았다.
 - 공간 사용 가능 발생 후보 6,190개(1,681개 구역). 강우 조건 확보 4,382개, 누적강우 부족 1,496개, 이벤트·QC 검토 312개. 공간 보류/미해결 105개도 감사 추적을 위해 기준표에 유지했다.
 - `station_daily_availability`는 전체 RAIN_DATAS 원본 관측소·날짜 현황이다. 위치 이력 검증 전이므로 분석용 강우 완전성과 구분한다. `required_rain_review`는 현재 A의 15일 창만 대상으로 한 319개 관측소·날짜 확인 목록이며 B/C 추가 수집 목록 전체가 아니다.
@@ -254,15 +254,15 @@ Agent는 대규모 변경 전에 대상·이유·영향·범위를 설명하고 
 
 ### 06 · 02 부족 강우 추가 수집
 
-`codes/6/02_collect_missing_rainfall.py`는 01의 `required_rain_review.parquet`을 읽고, 현재 RAIN_DATAS를 다시 확인하여 부족한 관측 시간만 요청한다. 기본 실행은 계획만 생성하며 API 호출과 RAIN_DATAS 변경을 하지 않는다.
+`codes/6_시간비교표본_B/02_collect_missing_rainfall.py`는 01의 `required_rain_review.parquet`을 읽고, 현재 RAIN_DATAS를 다시 확인하여 부족한 관측 시간만 요청한다. 기본 실행은 계획만 생성하며 API 호출과 RAIN_DATAS 변경을 하지 않는다.
 
 ```powershell
 # 계획 확인만
-.\.venv\Scripts\python.exe ver3\codes\6\02_collect_missing_rainfall.py
+.\.venv\Scripts\python.exe ver3\codes\6_시간비교표본_B\02_collect_missing_rainfall.py
 # 실제 수집: KMA API허브 인증키를 화면에 표시되지 않는 입력으로 받음
-.\.venv\Scripts\python.exe ver3\codes\6\02_collect_missing_rainfall.py --execute
+.\.venv\Scripts\python.exe ver3\codes\6_시간비교표본_B\02_collect_missing_rainfall.py --execute
 # 일부 요청으로 시험 (재시도는 별도이며 이 숫자는 논리 요청 수)
-.\.venv\Scripts\python.exe ver3\codes\6\02_collect_missing_rainfall.py --execute --max-requests 10
+.\.venv\Scripts\python.exe ver3\codes\6_시간비교표본_B\02_collect_missing_rainfall.py --execute --max-requests 10
 ```
 
 - 인증키는 환경변수 `KMA_API_KEY`로도 전달할 수 있다. 코드·요청 로그·응답 캐시에 키를 저장하지 않는다.
@@ -272,12 +272,12 @@ Agent는 대규모 변경 전에 대상·이유·영향·범위를 설명하고 
 - 재실행 시 현재 부족분만 다시 계획하며 저장된 정상 응답을 재사용한다. 저장된 결측 응답을 새로 조회하려면 `--refresh`를 추가한다. 중단 후 `.ver3_missing_rainfall.lock`이 남았다면 실행 프로세스가 없는지 확인한 뒤 잠금 파일만 제거해야 한다.
 - 계획·남은 부족 목록과 `02_rain_collection_summary.html`은 `output/06/full`. 요청·진행·오류·값 충돌은 `log/06/full/02_collect`에 저장한다. `progress.json`은 요청 직전과 관측소·날짜 처리 후 갱신한다. 인증 거절·응답 형식 오류는 중단하며 부족 관측이 남으면 COMPLETE_WITH_REVIEW로 기록한다.
 - 현재 A 표본 15일 창만 대상이다. B/C 기간을 추가 수집하는 단계는 표본 추출 기준 확정 후 진행한다. 수집 후 기존 02~04를 해당 코드로 다시 계산하고 06의 기준표·위치 이력 QC·공간 사용 목록 연결을 재검증해야 한다. 수집 코드가 앞 단계 결과를 수정하지 않는다.
-- 오프라인 검증: `codes/6/verify_rain_collection.py`. 실제 API와 공유 강우 파일에 쓰지 않고 기존 응답 표본 및 임시 파일로 검증한다.
+- 오프라인 검증: `codes/6_시간비교표본_B/verify_rain_collection.py`. 실제 API와 공유 강우 파일에 쓰지 않고 기존 응답 표본 및 임시 파일로 검증한다.
 
 ### 06 · 03 같은 STN의 다른 강우 이벤트 B 추출 (2026-10-08)
 
 - 사용자 확정: B는 A와 같은 공간·STN 좌표를 공유하는 다른 강우 이벤트. 탐색 기간은 보유한 전체 연도. 산사태 연결 이벤트와 겹침 금지.
-- `codes/6/03_sample_b_events.py` 실행. 기존 B 결과 교체에는 --overwrite 필요. 설정은 `config/sampling.json`이며 재현 가능한 무작위 seed=42를 사용한다.
+- `codes/6_시간비교표본_B/03_sample_b_events.py` 실행. 기존 B 결과 교체에는 --overwrite 필요. 설정은 `config/sampling.json`이며 재현 가능한 무작위 seed=42를 사용한다.
 - A의 행정구역을 유지하고 관측망별 위치 이력으로 이벤트의 모든 유효 시간 좌표를 확인한다. STN 번호만 같고 이전으로 좌표가 다르거나, 좌표 확인이 불가능한 이벤트는 B로 사용하지 않는다.
 - 같은 STN의 모든 산사태 연결 후보 이벤트를 제외 대상으로 삼는다. 다중·애매한 후보와 공간 제외 A의 연결 이벤트도 포함한다. B 이벤트 또는 종료일 포함 이전 15일 창에 이 이벤트가 조금이라도 겹치면 제외한다. 이는 사용자 겹침 금지 요구를 누적 창까지 보수적으로 적용한 것이다.
 - 해당 행정구역 및 상위 읍면동의 알려진 산사태 기간과 B 이벤트·종료일이 겹치는 경우도 제외한다. 발생 기록 없음은 실제 미발생 확정이 아니므로 NO_REPORTED_LANDSLIDE로 기록한다.
@@ -288,29 +288,29 @@ Agent는 대규모 변경 전에 대상·이유·영향·범위를 설명하고 
 
 ### 06 · 04 시간당 강우 A/B 비교 HTML (2026-10-08)
 
-- `codes/6/04_build_hourly_comparison.py` 실행. 갱신은 `--overwrite`. 산출물은 `output/06/full/04_hourly_rainfall_comparison.html`이며 인터넷 연결 없이 열린다.
+- `codes/6_시간비교표본_B/04_build_hourly_comparison.py` 실행. 갱신은 `--overwrite`. 산출물은 `output/06/full/04_hourly_rainfall_comparison.html`이며 인터넷 연결 없이 열린다.
 - 같은 STN·좌표·공간의 A/B 쌍을 선택해 이벤트 구간 또는 종료일 포함 이전 15일의 시간당 강우를 비교한다. 기본 세로축은 공통이다. A의 알려진 발생 시간 범위도 표시한다.
 - 현재 RAIN_DATAS의 AWS/ASOS Parquet을 읽고 관측망별 위치 이력을 적용한다. 0mm는 유지하고 결측·위치 검토·다른 좌표 관측은 null로 표시한다. 관측 부분합을 완전 누적값으로 표시하지 않는다. 이벤트 구간 자체는 기존 A/B 스냅샷 기준이다.
 - 아래 분포 그래프는 선택 STN의 모든 A/B 이벤트에 현재 표시 구간을 적용하고 유형별 동일 관측 시간을 중복 제거한다. 결측은 분모에서 제외하며 0mm를 포함한다. B는 실제 미발생 확정이 아닌 산사태 미포착 표본이다.
-- 실행/QC는 `log/06/full/04_hourly_viewer`. `codes/6/verify_hourly_comparison.py`는 결측·0·좌표 마스킹 및 JavaScript 선택/그래프 데이터 로직을 검증한다. 실제 브라우저 렌더링 검증과 구분한다.
+- 실행/QC는 `log/06/full/04_hourly_viewer`. `codes/6_시간비교표본_B/verify_hourly_comparison.py`는 결측·0·좌표 마스킹 및 JavaScript 선택/그래프 데이터 로직을 검증한다. 실제 브라우저 렌더링 검증과 구분한다.
 
 ### 05 · 03 행정구역별 경사 TIFF 분리 (코드 작성, 실행 대기)
 
-- `codes/5/03_export_admin_slope.py`: 기존 전체 경사 TIFF를 04 공간 단위 경계로 자른다. 원본 5m 격자를 유지하며 재계산·재투영·보간하지 않는다.
+- `codes/5_DEM_경사분석/03_export_admin_slope.py`: 기존 전체 경사 TIFF를 04 공간 단위 경계로 자른다. 원본 5m 격자를 유지하며 재계산·재투영·보간하지 않는다.
 - 전체 실행 결과는 `output/05/full/admin_slope/<SPATIAL_UNIT_ID>_slope_deg.tif`, 파일 목록 `index.parquet`, 간단 설명 `summary.html`. 43개 TEMP_EXCLUDED 구역도 확인용으로 포함하며 상태를 유지한다. 값이 없는 구역은 NoData만 저장한다.
 - `--limit 3`으로 별도 smoke 폴더에서 시험 가능. 기본 실행에서 기존 파일을 검증 후 자동으로 이어간다. `--resume`도 호환용으로 사용할 수 있다. 기존 파일 검증 실패는 자동 덮어쓰지 않고 중단한다. 진행도 JSON/HTML의 일시적 접근 거부는 경고 후 다음 갱신에서 재시도하며 TIFF 처리를 중단하지 않는다.
 - 로그·진행은 `log/05/<full|smoke>/03_export_admin_slope`. 저장 파일을 다시 읽어 기존 행정구역별 유효 격자 수와 비교한다. 사용자 요청으로 현재 실제 저장은 미실행.
 
 ### 06 · 05 사용자 확정 분석 제외 (2026-10-08)
 
-- `codes/6/05_select_analysis_samples.py`: 공간 제외 43개 구역에 연결된 이벤트 전체 68개와, 나머지 A 결측·종료 미확인 이벤트 73개를 분석에서 제외한다. 기존 원본과 A/B 결과는 보존한다.
+- `codes/6_시간비교표본_B/05_select_analysis_samples.py`: 공간 제외 43개 구역에 연결된 이벤트 전체 68개와, 나머지 A 결측·종료 미확인 이벤트 73개를 분석에서 제외한다. 기존 원본과 A/B 결과는 보존한다.
 - 이후 분석 입력은 `output/06/full/05_selection/occurrence_selected.parquet` 및 `b_event_selected.parquet`. 결정표 `event_selection.parquet`, 실행/QC `log/06/full/05_selection/run.json`. 고유 A 이벤트 1,415개, 행정구역별 A/B 5,866쌍. 행정구역 미확정 행은 사용하지 않는다.
 - 제외한 A도 알려진 산사태 연결 이벤트이므로 B 추출의 겹침 금지 목록에서는 제거하지 않는다. 기존 시간당 HTML은 제외 전 스냅샷이다.
-- `codes/6/06_summarize_selected_samples.py`로 같은 폴더의 `summary.html` 생성. A/B 각각 5,866개, 총 11,732개, 고유 A 이벤트 1,415개·B 이벤트 4,359개, 행정구역 1,669개·STN 297개. 행정구역 이름/코드 검색과 파일 링크 제공. QC는 `log/06/full/05_selection/summary_verification.json`.
+- `codes/6_시간비교표본_B/06_summarize_selected_samples.py`로 같은 폴더의 `summary.html` 생성. A/B 각각 5,866개, 총 11,732개, 고유 A 이벤트 1,415개·B 이벤트 4,359개, 행정구역 1,669개·STN 297개. 행정구역 이름/코드 검색과 파일 링크 제공. QC는 `log/06/full/05_selection/summary_verification.json`.
 
 ### 08 · 01 토지피복 분석 범위 준비 (2026-10-08, 기존 07에서 이동)
 
-- `codes/8/01_prepare_landcover_areas.py`: 확정 A/B 목록의 1,669개 공간 경계를 추출했다. `output/08/full/required_spatial_units.parquet`, `summary.html`. 입력 해시·공간 ID·구역별 A/B 표본 수 확인 기록은 `log/08/full/01_preparation/run.json`(이동 전 실행 기록은 보존).
+- `codes/8_토지피복_확보/01_prepare_landcover_areas.py`: 확정 A/B 목록의 1,669개 공간 경계를 추출했다. `output/08/full/required_spatial_units.parquet`, `summary.html`. 입력 해시·공간 ID·구역별 A/B 표본 수 확인 기록은 `log/08/full/01_preparation/run.json`(이동 전 실행 기록은 보존).
 - 자료 저장 위치는 기존 `base/landcover`. 현재 비어 있으며 토지피복 분류 면적 계산은 미실행. 도엽 인덱스 없이 경위도 범위만으로 도엽번호를 추정하지 않는다.
 - 다음은 자료 기준연도·분류코드·CRS 확인, 경계와 겹치는 도엽 확보, 구역별 분류 면적/자료 확보율 집계다. A/B는 공간이 같으므로 구역별 지형·토지피복 자료를 공유한다. 연도별 피복을 사용할 경우 각 표본 기준일과 별도로 연결한다. C 공간 표본은 아직 준비하지 않았다.
 
@@ -319,7 +319,7 @@ Agent는 대규모 변경 전에 대상·이유·영향·범위를 설명하고 
 - 사용자 지시: A의 산사태 연결 강우 이벤트와 같은 시간대에 다른 행정구역을 무작위 추출·매칭한다. A의 시간대/종료일을 유지하며 C 지역 자체의 이벤트 종료일로 변경하지 않는다. 공간 단위는 기존 리 우선·읍면동 보완.
 - 확정 A 5,866행을 기준으로 A마다 C 1개를 목표로 준비한다. C는 발생 기록 미포착 비교표본이며 미발생 확정으로 표시하지 않는다.
 - 사용자 확정: 행정구역을 무작위 제안하고 그 구역의 발생 기록 기간이 A 강우 이벤트 구간과 겹치면 폐기·재추출. 다른 구역의 발생 또는 동일 STN 공유만으로는 제외하지 않는다. 기간 겹침 검사는 [시작, 종료) 기준이며 읍면동 수준 기록은 하위 리 전체에 적용한다. 분석에서 제외한 A 기록도 검사한다.
-- `codes/7/01_sample_spatial_controls.py` 실행 완료. 기존 출력 자동 덮어쓰기 없음. seed=42, A당 C 1개, C 행정구역·종료일 중복 금지. 같은 구역의 알려진 산사태 연결 강우 이벤트 구간과 겹치는 후보도 제외했다.
+- `codes/7_공간비교표본_C/01_sample_spatial_controls.py` 실행 완료. 기존 출력 자동 덮어쓰기 없음. seed=42, A당 C 1개, C 행정구역·종료일 중복 금지. 같은 구역의 알려진 산사태 연결 강우 이벤트 구간과 겹치는 후보도 제외했다.
 - 후보는 전국 공간 등록부에서 알려진 TEMP_EXCLUDED 43개를 제외한 구역. 관측소는 이력 기반 행정구역 최대 티센 면적 연결이며 A 전체 구간에서 동일 STN·좌표가 유지되는 경우 사용한다.
 - `output/07/full/c_event_samples.parquet` 5,866개, `c_sampling_status.parquet`, `c_spatial_units_5186.parquet` 5,042개 구역, `summary.html`. STN 658개, A와 동일 STN 12개 허용. 실행·QC `log/07/full/01_sampling`.
 - 행정구역 미확정 발생 기록 323건은 구역별 제외에 적용하지 못한다. 실제 미발생 확정이 아니며 이 한계를 HTML에도 표시했다. C 강우는 확보 점검·누적 계산 전이고, 5,481개 C 표본의 구역은 기존 경사 분석 밖이어서 후속 준비가 필요하다.
@@ -327,7 +327,7 @@ Agent는 대규모 변경 전에 대상·이유·영향·범위를 설명하고 
 
 ### 07 · 02 C 강우량 연결 (2026-10-08)
 
-- `codes/7/02_link_c_rainfall.py`: 현재 RAIN_DATAS AWS/ASOS Parquet을 읽고 관측망 위치 이력 및 C의 고정 좌표를 확인했다. C 5,866개 유지, 이벤트 구간 및 종료일 포함 이전 1~15일 각각 계산.
+- `codes/7_공간비교표본_C/02_link_c_rainfall.py`: 현재 RAIN_DATAS AWS/ASOS Parquet을 읽고 관측망 위치 이력 및 C의 고정 좌표를 확인했다. C 5,866개 유지, 이벤트 구간 및 종료일 포함 이전 1~15일 각각 계산.
 - `output/07/full/02_rainfall/c_rainfall_features.parquet`, `c_rainfall_hourly.parquet`, `c_missing_hours.parquet`, `summary.html`. 원본 C 표본은 read-only이며 연결된 표본은 피처 파일에 모두 포함한다. 현재 강우 연결 결과는 이 피처 파일을 사용한다.
 - `*_OBSERVED_SUM_MM`는 관측 부분합, `*_COMPLETE_SUM_MM`는 해당 창의 모든 시간이 유효할 때만 제공. 관측 0개는 부분합도 null. `*_VALID_HOURS`, `*_MISSING_HOURS`, `*_COVERAGE`를 함께 저장하며 결측을 0mm로 대체하지 않는다.
 - 이벤트 구간 완전 5,589개, 이전 15일 및 이벤트 모두 완전 4,272개. 고유 필요 시간 939,720개 중 부족 31,192개(유효 관측 없음 30,784, 다른 관측소 좌표 406, 위치 이력 사용 불가 2). 다른 좌표·위치 불확실 시간을 단순 다운로드로 해결된 것으로 취급하지 않는다.
@@ -336,15 +336,15 @@ Agent는 대규모 변경 전에 대상·이유·영향·범위를 설명하고 
 
 ### 07 · 03 A/B/C 시간별 강우 비교 HTML (2026-10-08)
 
-- `codes/7/03_build_abc_hourly_comparison.py` → `output/07/full/03_abc_comparison/summary.html`. 확정 A/B/C 각 5,866개를 A_REFERENCE_ID로 연결하고 행정구역→A STN→매칭 쌍을 선택한다.
+- `codes/7_공간비교표본_C/03_build_abc_hourly_comparison.py` → `output/07/full/03_abc_comparison/summary.html`. 확정 A/B/C 각 5,866개를 A_REFERENCE_ID로 연결하고 행정구역→A STN→매칭 쌍을 선택한다.
 - 사용자 정정 반영: 실제 산사태 발생 시각이 아니라 A에 연결된 강우 이벤트 종료일을 기준으로 한다. 기존 달력일 누적 규칙에 맞춰 종료일 다음 날 00시(종료일 24시)를 0으로 둔다. A/C는 같은 종료일, B는 B 자체 종료일. 이벤트가 끝난 뒤 그 날짜의 나머지 시간도 포함한다.
 - 기본 이전 15시간, 종료일 포함 이전 15일(360시간) 전환 가능. 세 패널 공통 세로축, 부분합/최대 1시간/결측 수 표시. 전체 시간별 평균은 행정구역–강우 표본 기준으로 집계하므로 같은 STN·시간이 여러 구역에서 반복될 수 있음을 명시한다. 결측은 평균 제외, 0mm 유지.
 - 현재 RAIN_DATAS 및 위치 이력·표본 좌표를 적용. 원본 및 앞 단계 결과 변경/추가 API 요청 없음. 실행/QC `log/07/full/03_abc_comparison`.
-- `codes/7/verify_abc_hourly_comparison.py`: 모든 C의 360시간 부분합/유효 시간과 기존 연결 피처 일치, A/C 기준일 일치, A/B STN 일치, 15/360시간 전환·선택·공통 축 JavaScript 로직 확인. 실제 브라우저 렌더링 검증은 접근 제한으로 미수행.
+- `codes/7_공간비교표본_C/verify_abc_hourly_comparison.py`: 모든 C의 360시간 부분합/유효 시간과 기존 연결 피처 일치, A/C 기준일 일치, A/B STN 일치, 15/360시간 전환·선택·공통 축 JavaScript 로직 확인. 실제 브라우저 렌더링 검증은 접근 제한으로 미수행.
 
 ### 07 · 04 B/C 이전 15일 결측 원인 점검 (2026-10-08)
 
-- `codes/7/04_analyze_bc_missing_rainfall.py`: 현재 저장된 AWS/ASOS 원본 행 존재 여부와 RN_1H 값, 기존 HTML의 위치 QC를 대조한다. `output/07/full/04_bc_missing/summary.html`, `bc_hourly_availability.parquet`, `bc_daily_missing_summary.parquet`, `bc_sample_missing_summary.parquet`. 실행/QC는 `log/07/full/04_bc_missing`.
+- `codes/7_공간비교표본_C/04_analyze_bc_missing_rainfall.py`: 현재 저장된 AWS/ASOS 원본 행 존재 여부와 RN_1H 값, 기존 HTML의 위치 QC를 대조한다. `output/07/full/04_bc_missing/summary.html`, `bc_hourly_availability.parquet`, `bc_daily_missing_summary.parquet`, `bc_sample_missing_summary.parquet`. 실행/QC는 `log/07/full/04_bc_missing`.
 - B 고유 필요 992,544시간 중 관측행 없음 172,875, 행은 있지만 null 9,849, 좌표 불일치 603, 위치 이력 사용 불가 1. C 고유 필요 939,720시간 중 관측행 없음 7,941, null 22,843, 좌표 불일치 406, 위치 이력 사용 불가 2. 음수/무한값으로 남은 부족 시간은 이번 요구 범위에서 0.
 - B 관측행 없음 중 날짜 파일 자체 없음 161,328시간, 관측소 날짜 자료 없음 456, 해당 관측소 날짜 안 일부 시간행 없음 11,091. C는 날짜 파일 자체 없음 0, 관측소 날짜 자료 없음 5,952, 일부 시간행 없음 1,989.
 - 고유 시간은 표본 유형별 STN·좌표·시간 중복 제거, SAMPLE_USES는 행정구역 표본에서 반복 사용된 횟수. 표본 가중 부족 시간 B 336,263 / C 60,782로 기존 HTML과 일치한다.
@@ -353,7 +353,7 @@ Agent는 대규모 변경 전에 대상·이유·영향·범위를 설명하고 
 
 ### 07 · 05 B/C 부족 강우 추가 수집 (2026-10-08)
 
-- `codes/7/05_collect_bc_missing_rainfall.py`: 04 결측 분석의 NO_OBSERVATION_ROW만 대상으로 현재 RAIN_DATAS를 재확인한다. B/C 중복 STN·시간은 한 번만 요청하며 기존 저장 null/음수와 위치 QC 제외는 재요청하지 않는다. 좌표 이력이 확인되는 관측망·시간만 수집한다.
+- `codes/7_공간비교표본_C/05_collect_bc_missing_rainfall.py`: 04 결측 분석의 NO_OBSERVATION_ROW만 대상으로 현재 RAIN_DATAS를 재확인한다. B/C 중복 STN·시간은 한 번만 요청하며 기존 저장 null/음수와 위치 QC 제외는 재요청하지 않는다. 좌표 이력이 확인되는 관측망·시간만 수집한다.
 - 기본 실행은 계획 생성, `--execute`로 실제 수집, `--max-requests 25`로 요청 수 제한, `--refresh`로 여전히 관측행이 없는 시간의 응답 캐시 갱신. 인증키는 KMA_API_KEY 또는 숨김 입력. AWS 시간별 요청 후 유효값 미확보 시간만 이력이 맞는 ASOS로 보완한다. 0mm는 유효값이며 원 관측 결측을 0으로 대체하지 않는다.
 - 표준 RAIN_DATAS/지상관측/{AWS|ASOS}/hourly/YYYY/MM/DD/data_YYYYMMDD.parquet에 STN,time_start,time_end,RN_1H 형식으로 추가한다. 기존 유효값 보존, 백업 후 원자 저장, index 갱신 및 공유 저장 잠금을 적용한다. 기존 수집기 06/02의 검증된 저장·API 함수를 사용한다.
 - 계획/잔여 검토/HTML은 output/07/full/05_collection, 요청·캐시·백업·진행·오류 상태는 log/07/full/05_collection. 중단 후 재실행 시 현재 파일의 기존 행은 건너뛰며 캐시도 재사용한다. 강우 피처와 비교 HTML은 수집 뒤 별도로 재생성해야 한다.
@@ -367,14 +367,14 @@ Agent는 대규모 변경 전에 대상·이유·영향·범위를 설명하고 
 
 ### 08 · 02 ABC 연도별 토지피복 신청 목록 (2026-10-08)
 
-- `codes/8/02_prepare_yearly_landcover_requirements.py`: 확정 A/B 각 5866개와 C 5866개의 END_DATE 연도를 기준으로 세분류 1m급 신청 대상 목록 생성. A/C 날짜 일치 검증, B 자체 종료일 사용. 동일 연도·행정구역은 유형 사이에서 중복 제거.
+- `codes/8_토지피복_확보/02_prepare_yearly_landcover_requirements.py`: 확정 A/B 각 5866개와 C 5866개의 END_DATE 연도를 기준으로 세분류 1m급 신청 대상 목록 생성. A/C 날짜 일치 검증, B 자체 종료일 사용. 동일 연도·행정구역은 유형 사이에서 중복 제거.
 - `output/08/full/02_yearly_requirements/summary.html`, `sample_year_admin_mapping.parquet`, `2021`~`2025/required_admin_units.parquet`. 연도별 파일은 행정구역명·코드·EPSG:5186 경계·WGS84 검색 범위와 A/B/C 사용 횟수를 포함한다. 고유 행정구역 6372개, 연도–행정구역 조합 10552개(2021:992, 2022:1960, 2023:3573, 2024:1791, 2025:2236).
 - REQUEST_MAP_YEAR는 같은 표본 기준연도의 자료 확보 목표다. 실제 촬영일·학습 시점 적합성은 REVIEW_SOURCE_IMAGE_DATE, 도엽번호는 미확정. 연도 매칭이 사전 관측으로 확정됐다는 뜻은 아니다. 지도 다운로드·피복 분석 미실행. 기존 A/B 전용 08/01 출력은 그대로 보존한다.
 - 실행/QC `log/08/full/02_yearly_requirements/run.json`: 입력 불변, 모든 표본 연결, A/C 날짜 일치, 그룹 합계, 경계 파일 저장·재로딩 CRS/행 수 검증.
 
 ### 08 · 03 토지피복 원자료 수집 코드 (2026-10-08)
 
-- `codes/8/03_download_landcover_sources.py`: 08/02 연도별 ABC 경계를 공식 도엽 인덱스와 교차하여 필요한 도엽만 연도별로 중복 제거 후 SHP ZIP 원자료 수집. WMS 이미지 다운로드로 대체하지 않는다.
+- `codes/8_토지피복_확보/03_download_landcover_sources.py`: 08/02 연도별 ABC 경계를 공식 도엽 인덱스와 교차하여 필요한 도엽만 연도별로 중복 제거 후 SHP ZIP 원자료 수집. WMS 이미지 다운로드로 대체하지 않는다.
 - 현재 공식 공개 문서에서 확인한 API는 WMS 표시 서비스이며, 원자료는 로그인/자료신청 절차로 제공된다. 원자료용 자동 다운로드 API는 확인하지 못했다. GeoServer capabilities 접근도 실패했으며 이를 WFS 미지원의 증거로 단정하지 않는다.
 - 입력: base/landcover/tile_index.parquet 또는 --tile-index 경로(GeoParquet/GeoJSON/SHP), MAP_YEAR/TILE_ID/DOWNLOAD_URL/geometry/CRS. 공식 도엽 경계와 정식 다운로드 주소가 필요하며 현재 미확보. 주소를 추측하거나 도엽번호를 좌표로 만들어내지 않는다.
 - 기본 실행은 계획, --execute 실제 수집, --limit 2 시험. 원자료는 base/landcover/YYYY/TILE_ID.zip. 기존 파일 검증 후 보존, ZIP CRC·SHP/SHX/DBF/PRJ 검사, 임시 저장 후 rename. 실패 시 이번 실행이 만든 부분파일만 제거. 기존 partial은 검토 전 덮어쓰지 않는다.
@@ -383,7 +383,7 @@ Agent는 대규모 변경 전에 대상·이유·영향·범위를 설명하고 
 
 ### 08 · 05 국가기본도 도엽 인덱스 점검 (2026-10-08)
 
-- `codes/8/05_check_tile_index.py`: 사용자가 제공한 `base/국가기본도_도엽인덱스5K/TN_MAPINDX_5K.shp`의 17,661개 도엽을 확인했다. 원좌표계 EPSG:5179, 비교 좌표계 EPSG:5186. `MAPIDCD_NO`는 사이트 검색용 8자리 도엽번호이며 원본 경계를 수정하지 않는다.
+- `codes/8_토지피복_확보/05_check_tile_index.py`: 사용자가 제공한 `base/국가기본도_도엽인덱스5K/TN_MAPINDX_5K.shp`의 17,661개 도엽을 확인했다. 원좌표계 EPSG:5179, 비교 좌표계 EPSG:5186. `MAPIDCD_NO`는 사이트 검색용 8자리 도엽번호이며 원본 경계를 수정하지 않는다.
 - 다운로드된 `output/08/test.zip`의 성동061(37705061)과 비교: 면적 일치 99.998164%, 경계 최대 거리 0.07356m, 인덱스 경계 1m 밖 피복 면적 0㎡. 실제 피복 비교는 이 한 도엽에 한정한다. 사용자 지시에 따라 1m 경계 차이를 허용 오차로 구분하고, 경계 띠에만 걸치는 후보도 누락 방지를 위해 보존한다.
 - `output/08/full/05_tile_index/`: `required_tiles_by_year.parquet`, `admin_tile_links.parquet`, `admin_index_coverage.parquet`, `summary.html`. 연도별 도엽 후보 2021:3,777 / 2022:6,629 / 2023:10,218 / 2024:5,686 / 2025:6,960. 연도 전체 고유 도엽 13,536개.
 - 연도–행정구역 10,552개 중 COVERED 10,371, WITHIN_1M_TOLERANCE 5, REVIEW_INDEX_COVERAGE 176(고유 구역 155개). 미확보 영역은 검토 목록에 남기며 표본을 자동 제외하거나 경계를 보정하지 않는다. 인덱스는 필요한 도엽 선별에 사용 가능하지만 연도별 사이트 제공 여부·정식 다운로드 주소는 별도 확인이 필요하다.

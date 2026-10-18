@@ -32,7 +32,7 @@ def main():
         V3/'output/08/full/15_abc_selection/occurrence_selected.parquet',
         V3/'output/01/full/landslide_station_links.parquet',
         V3/'output/10/full/01_fusion_hourly/admin_grid_links.parquet',
-        V3/'codes/10/01_collect_fusion_hourly_fixed.py']
+        V3/'codes/10_융합강우_수집/01_collect_fusion_hourly_fixed.py']
     inputs={str(p):signature(p) for p in paths}
     rain=pd.read_parquet(paths[0]);rain=rain[rain.SAMPLE_TYPE.eq('A')].copy();assert len(rain)==5673
     assert rain.VALUE_PROVENANCE.str.startswith('RAW_NETCDF').all()

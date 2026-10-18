@@ -22,7 +22,7 @@ def main():
     links=pd.read_parquet(V3/'output/10/full/01_fusion_hourly/admin_grid_links.parquet')
     grid=pd.read_parquet('/data/RAIN_DATAS/융합기상/INT/grid.parquet')
     registry=gpd.read_parquet(V3/'output/04/full/spatial_units_5186.parquet').to_crs(5186)
-    spec=importlib.util.spec_from_file_location('unit_verified_decoder',V3/'codes/10/01_collect_fusion_hourly_fixed.py')
+    spec=importlib.util.spec_from_file_location('unit_verified_decoder',V3/'codes/10_융합강우_수집/01_collect_fusion_hourly_fixed.py')
     decoder=importlib.util.module_from_spec(spec);spec.loader.exec_module(decoder)
     ids=np.sort(links.loc[links.SPATIAL_UNIT_ID.isin(samples.SPATIAL_UNIT_ID),'GRID_ID'].unique())
     cache={};source_files=[]

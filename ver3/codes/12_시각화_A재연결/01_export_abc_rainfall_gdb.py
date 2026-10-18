@@ -26,7 +26,7 @@ def main():
         V3/'output/10/full/01_fusion_hourly/admin_grid_links.parquet',
         V3/'output/04/full/spatial_units_5186.parquet',
         Path('/data/RAIN_DATAS/융합기상/INT/grid.parquet'),
-        V3/'codes/10/01_collect_fusion_hourly_fixed.py']
+        V3/'codes/10_융합강우_수집/01_collect_fusion_hourly_fixed.py']
     inputs={str(p):signature(p) for p in paths}
     all_samples=pd.read_parquet(paths[0]);assert all_samples.VALUE_PROVENANCE.str.startswith('RAW_NETCDF').all()
     counts=all_samples.pivot(index='A_REFERENCE_ID',columns='SAMPLE_TYPE',values='GRID_COUNT')
@@ -124,7 +124,7 @@ def main():
     page+='<p>5묶음 × ABC = 15표본. 각 격자별 360시간을 실제 시각으로 저장했습니다. EPSG:5186, 경위도 LON/LAT는 EPSG:4326입니다.</p>'
     page+='<p><code>abc_rainfall_examples.gdb</code> 안의 A_hourly / B_hourly / C_hourly / admin_boundaries를 ArcGIS Pro에 추가하세요.</p>'
     page+='<ol><li>레이어 속성 → 시간 → 단일 시간 필드 START_TIME, 한국 시간, 1시간 간격.</li><li>RN_1H(mm)로 점 색상/크기를 설정합니다. END_TIME은 원래 구간의 배타적 종료 시각입니다.</li><li>CASE_NO = 1~5로 한 묶음을 선택하면 공간·시간 비교가 쉽습니다. 실제 날짜이므로 B는 A/C와 다른 날 표시됩니다.</li></ol>'
-    page+='<p>ArcGIS Pro Python 창에서 다음을 실행하면 레이어 시간 설정과 .lyrx 저장을 자동 적용합니다.</p><pre><code>exec(open(r"'+str(V3/'codes/12/02_enable_time_in_arcgis.py')+'", encoding="utf-8").read())</code></pre>'
+    page+='<p>ArcGIS Pro Python 창에서 다음을 실행하면 레이어 시간 설정과 .lyrx 저장을 자동 적용합니다.</p><pre><code>exec(open(r"'+str(V3/'codes/12_시각화_A재연결/02_enable_time_in_arcgis.py')+'", encoding="utf-8").read())</code></pre>'
     page+='<p>표본은 자료가 완전하고 각 구역의 격자가 30개 이하인 예시 후보에서 기존 하탄방리 묶음과 고정 시드로 선택했습니다. 학습용 대표 추출은 아닙니다. B/C는 발생기록 미포착입니다.</p>'
     page+=summary.to_html(index=False,border=0)+'<p>단위 보정된 원응답에서 재산출했습니다. RAIN_DATAS의 기존 hourly Parquet은 변경하지 않았습니다. ArcPy 별도 실행 라이선스 오류로 .lyrx 자동 설정은 Pro 안에서 실행해야 합니다.</p></html>'
     (OUT/'summary.html').write_text(page,encoding='utf-8')

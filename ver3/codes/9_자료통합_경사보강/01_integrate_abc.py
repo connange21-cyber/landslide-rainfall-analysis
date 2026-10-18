@@ -92,7 +92,7 @@ def main():
     assert (a.set_index('A_REFERENCE_ID').SPATIAL_UNIT_ID.sort_index()==b.set_index('A_REFERENCE_ID').SPATIAL_UNIT_ID.sort_index()).all()
     config=json.loads(paths[3].read_text(encoding='utf-8'))
     history=pd.read_excel(paths[4],sheet_name='location_history')
-    spec=importlib.util.spec_from_file_location('integration_rain_loader',V3/'codes/6/04_build_hourly_comparison.py')
+    spec=importlib.util.spec_from_file_location('integration_rain_loader',V3/'codes/6_시간비교표본_B/04_build_hourly_comparison.py')
     loader=importlib.util.module_from_spec(spec);spec.loader.exec_module(loader)
     dates=set()
     for day in pd.to_datetime(table.END_DATE).unique():

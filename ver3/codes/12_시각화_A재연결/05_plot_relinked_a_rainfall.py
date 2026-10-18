@@ -46,7 +46,7 @@ def main():
     OUT.mkdir(parents=True, exist_ok=True)
     LOG.mkdir(parents=True, exist_ok=True)
     table.to_parquet(OUT / 'damage_rainfall.parquet', index=False)
-    spec = importlib.util.spec_from_file_location('damage_plot', V3 / 'codes/12/03_plot_damage_rainfall.py')
+    spec = importlib.util.spec_from_file_location('damage_plot', V3 / 'codes/12_시각화_A재연결/03_plot_damage_rainfall.py')
     plot = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(plot)
     plot.OUT = OUT
