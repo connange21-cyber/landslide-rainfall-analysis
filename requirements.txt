@@ -1,0 +1,13 @@
+numpy
+pandas
+pyarrow
+scipy
+geopandas
+shapely
+pyproj
+rasterio
+requests
+openpyxl
+h5py
+plotly
+pyogrio

@@ -1,0 +1,69 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>같은 STN의 산사태 발생·미포착 강우 비교</title>
+<style>
+:root{--ink:#203247;--muted:#64748b;--line:#dce3eb;--a:#c05a39;--b:#267d91}*{box-sizing:border-box}body{margin:0;background:#f3f6fa;color:var(--ink);font:15px/1.6 "Malgun Gothic",Arial,sans-serif}main{max-width:1500px;margin:26px auto;padding:0 24px}header{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}h1{font-size:25px;margin:0 0 4px;letter-spacing:-.8px}p{margin:5px 0;color:var(--muted)}.caption{font-size:13px}.toolbar{display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap;padding:18px 20px;background:white;border:1px solid var(--line);border-radius:10px;margin:20px 0}.field{display:flex;flex-direction:column;gap:5px}.field.wide{flex:1;min-width:350px}label{font-size:12px;color:var(--muted);font-weight:bold}select,button{font:inherit;border:1px solid #c8d3df;border-radius:6px;padding:8px 12px;background:white;color:var(--ink)}button{cursor:pointer}button:hover{background:#eef3f8}.row{display:grid;grid-template-columns:1fr 1fr;gap:18px}.card{background:white;border:1px solid var(--line);border-radius:10px;overflow:hidden}.cardtop{padding:16px 20px 8px;border-top:4px solid var(--a)}.card.b .cardtop{border-top-color:var(--b)}h2{font-size:19px;margin:0}.metrics{display:flex;gap:22px;flex-wrap:wrap;padding:10px 20px 0}.metric b{display:block;font-size:21px;font-weight:600}.metric span{font-size:12px;color:var(--muted)}.plot{height:340px}.distribution{margin-top:20px;padding:16px 20px 4px}.distribution .plot{height:280px}.legend{display:flex;gap:22px;flex-wrap:wrap;font-size:12px;margin:12px 0;color:var(--muted)}.dot{display:inline-block;width:10px;height:10px;margin-right:6px;border-radius:2px}.notes{font-size:13px;padding:12px 2px 26px}.warning{color:#9b5a19}#loading{margin:35px 0;font-weight:bold}#app[hidden]{display:none}#pairInfo{margin-bottom:12px;color:var(--muted);font-size:13px}@media(max-width:900px){.row{grid-template-columns:1fr}main{padding:0 12px}.field.wide{min-width:250px}header{display:block}}
+</style><script>__PLOTLY_JS__</script></head><body><main>
+<header><div><h1>같은 STN의 시간당 강우 비교</h1><p>산사태 발생 기록 A · 산사태 미포착 B</p></div><p id="inventory" class="caption"></p></header>
+<div id="loading">강우 자료를 불러오는 중입니다…</div><section id="app" hidden>
+<div class="toolbar"><div class="field"><label for="station">관측소 STN</label><select id="station"></select></div>
+<div class="field wide"><label for="pair">같은 공간·관측소의 A–B 쌍</label><select id="pair"></select></div>
+<div class="field"><label for="mode">표시 구간</label><select id="mode"><option value="event">강우 이벤트 구간</option><option value="days">종료일 포함 이전 15일</option></select></div>
+<div class="field"><label for="scale">세로축</label><select id="scale"><option value="common">두 그래프 공통</option><option value="each">각 그래프 자동</option></select></div>
+<button id="prev" title="이전 A–B 쌍">이전</button><button id="next" title="다음 A–B 쌍">다음</button></div>
+<div id="pairInfo"></div><div class="row">
+<article class="card"><div class="cardtop"><h2>산사태 발생 기록</h2><p id="aDates" class="caption"></p></div><div id="aMetrics" class="metrics"></div><div id="aPlot" class="plot"></div></article>
+<article class="card b"><div class="cardtop"><h2>산사태 미포착</h2><p id="bDates" class="caption"></p></div><div id="bMetrics" class="metrics"></div><div id="bPlot" class="plot"></div></article></div>
+<div class="legend"><span><i class="dot" style="background:#c05a39"></i>A 시간당 강우</span><span><i class="dot" style="background:#267d91"></i>B 시간당 강우</span><span><i class="dot" style="background:#e4b552"></i>산사태 발생 기록의 시간 범위</span><span><i class="dot" style="background:#98a3b0"></i>아래쪽 회색 표시: 결측·위치 확인 불가</span></div>
+<article class="card distribution"><h2>선택한 STN의 시간당 강우량 분포</h2><p class="caption">현재 표시 구간을 전체 A/B 이벤트에 적용. 유형별 같은 관측 시간을 중복 제거하며 결측은 제외합니다.</p>
+<div id="histMetrics" class="caption"></div><div id="histPlot" class="plot"></div></article>
+<div class="notes"><p>B는 발생 기록이 포착되지 않은 비교표본이며 실제 미발생 확정은 아닙니다. A는 산사태 기록과 겹치는 강우 후보입니다.</p>
+<p>강우는 현재 RAIN_DATAS의 AWS 우선·ASOS 보완값이며 관측소 위치 이력을 적용했습니다. 결측과 다른 위치의 관측은 0mm로 채우지 않았습니다.</p>
+<p>기존 A/B 이벤트 구간을 표시합니다. 누적 15일 화면에는 이벤트가 끝난 뒤 같은 날짜의 나머지 시간도 포함될 수 있습니다. 모든 시각은 KST이며 막대는 [시작, 종료) 1시간 구간입니다.</p>
+<p>B 이벤트와 이전 15일 창은 같은 STN의 알려진 산사태 연결 후보 이벤트와 겹치지 않도록 추출했습니다. 학습·평가용 분리는 아직 수행하지 않았습니다.</p></div></section></main>
+<script>
+const H=3600000,colors={a:'#c05a39',b:'#267d91'},qLabels=['AWS 관측','ASOS 관측','관측값 결측 또는 행 없음','위치 이력 확인 불가','선택한 관측소 좌표와 다름'];
+let data,stationPairs=[],currentPair=null;const $=id=>document.getElementById(id);
+const time=s=>Date.parse(s+'Z'),fmt=ms=>new Date(ms).toISOString().slice(0,16).replace('T',' '),day=ms=>fmt(ms).slice(0,10);
+function view(e){const first=time(e.start),s=$('mode').value==='event'?time(e.eventStart):time(e.anchor)-14*24*H,t=$('mode').value==='event'?time(e.eventEnd):time(e.anchor)+24*H,l=Math.round((s-first)/H),r=Math.round((t-first)/H);return {start:s,end:t,v:e.v.slice(l,r),q:e.q.slice(l,r),e};}
+function metrics(id,v){let values=v.v.filter(x=>x!==null),missing=v.v.length-values.length,sum=values.reduce((a,b)=>a+b,0),max=values.length?Math.max(...values):null;
+ $(id).replaceChildren();for(const [value,label]of [[values.length?sum.toFixed(1)+' mm':'값 없음','관측 강우 부분합'],[max===null?'값 없음':max.toFixed(1)+' mm','최대 1시간 강우'],[missing+' / '+v.v.length,'결측·제외 시간'],[(100*values.length/v.v.length).toFixed(1)+'%','관측 확보율']]){let d=document.createElement('div');d.className='metric';let b=document.createElement('b');b.textContent=value;let s=document.createElement('span');s.textContent=label;d.append(b,s);$(id).append(d);}}
+function draw(id,v,type,ceiling,pair){const x=v.v.map((_,i)=>fmt(v.start+i*H)),custom=x.map((_,i)=>[fmt(v.start+(i+1)*H),qLabels[v.q[i]]]);
+ let missing=x.filter((_,i)=>v.v[i]===null),shapes=[],annotations=[];
+ if(type==='a')for(const r of pair.reported){let start=time(r.start),end=time(r.end);if(r.exact)end=start;
+  if(end<v.start||start>v.end)continue;
+  if(r.exact)shapes.push({type:'line',xref:'x',yref:'paper',x0:fmt(start),x1:fmt(start),y0:0,y1:1,line:{color:'#c49432',width:2,dash:'dot'}});
+  else shapes.push({type:'rect',xref:'x',yref:'paper',x0:fmt(Math.max(start,v.start)),x1:fmt(Math.min(end,v.end)),y0:0,y1:1,fillcolor:'#e4b552',opacity:.14,line:{width:0},layer:'below'});
+ }
+ const traces=[{type:'bar',x,y:v.v,marker:{color:colors[type]},customdata:custom,hovertemplate:'%{x} ~ %{customdata[0]} KST<br>%{y:.1f} mm<br>%{customdata[1]}<extra></extra>',name:'시간당 강우'},
+ {type:'scatter',mode:'markers',x:missing,y:missing.map(()=>-.035),yaxis:'y2',marker:{symbol:'line-ns-open',size:9,color:'#8894a2'},hovertemplate:'%{x} KST<br>결측·위치 제외<extra></extra>',name:'결측'}];
+ const layout={margin:{l:58,r:20,t:18,b:65},height:340,showlegend:false,bargap:.05,plot_bgcolor:'#fff',paper_bgcolor:'#fff',font:{family:'Malgun Gothic, Arial',size:12,color:'#526174'},
+ xaxis:{type:'date',title:{text:'관측 시간 KST'},tickformat:'%m/%d<br>%H:%M',range:[fmt(v.start),fmt(v.end)],showgrid:false},
+ yaxis:{title:{text:'1시간 강우량 (mm)'},rangemode:'tozero',gridcolor:'#edf0f4',range:ceiling?[0,ceiling]:undefined},yaxis2:{overlaying:'y',range:[0,1],visible:false,fixedrange:true},shapes,hovermode:'closest'};
+ // Missing markers use paper-like overlay coordinates within the plotting area.
+ traces[1].y=missing.map(()=>.012);
+ return Plotly.react(id,traces,layout,{responsive:true,displaylogo:false,modeBarButtonsToRemove:['select2d','lasso2d']});}
+function histogram(){let arrays={a:[],b:[]},nulls={a:0,b:0},counts={a:0,b:0};for(const type of ['a','b']){let ids=new Set(stationPairs.map(p=>p[type])),seen=new Set();counts[type]=ids.size;for(const id of ids){let v=view(data.events[id]);for(let i=0;i<v.v.length;i++){let t=v.start+i*H;if(seen.has(t))continue;seen.add(t);let n=v.v[i];if(n===null)nulls[type]++;else arrays[type].push(n);}}}
+ let max=[...arrays.a,...arrays.b].reduce((m,v)=>Math.max(m,v),1),width=max<=10?1:max<=50?5:10;
+ let traces=['a','b'].map(type=>({type:'histogram',x:arrays[type],histnorm:'percent',xbins:{start:0,end:Math.ceil(max/width)*width+width,size:width},opacity:.58,marker:{color:colors[type]},name:type==='a'?'산사태 발생 기록':'산사태 미포착',hovertemplate:'강우량 구간 %{x} mm<br>유효 시간 중 %{y:.2f}%<extra>%{fullData.name}</extra>'}));
+ $('histMetrics').textContent=`A ${counts.a}개 고유 이벤트 · 유효 ${arrays.a.length.toLocaleString()}시간 · 결측 ${nulls.a.toLocaleString()}시간 / B ${counts.b}개 고유 이벤트 · 유효 ${arrays.b.length.toLocaleString()}시간 · 결측 ${nulls.b.toLocaleString()}시간. 막대 폭 ${width}mm, 0mm 포함.`;
+ return Plotly.react('histPlot',traces,{height:280,margin:{l:65,r:20,t:25,b:55},barmode:'overlay',font:{family:'Malgun Gothic, Arial',color:'#526174'},paper_bgcolor:'#fff',plot_bgcolor:'#fff',legend:{orientation:'h',y:1.2},xaxis:{title:{text:'1시간 강우량 (mm)'},range:[0,Math.max(width*2,max+width)]},yaxis:{title:{text:'유효 시간 비율 (%)'},gridcolor:'#edf0f4'}},{responsive:true,displaylogo:false});}
+async function renderPair(){let pair=stationPairs[+$('pair').value];if(!pair)return;currentPair=pair;
+ let a=view(data.events[pair.a]),b=view(data.events[pair.b]),all=[...a.v,...b.v].filter(x=>x!==null),ceiling=$('scale').value==='common'?Math.max(1,...all)*1.12:null;
+ $('pairInfo').textContent=`${pair.unit} (${pair.unitId}) · STN ${pair.stn} · 위도 ${pair.lat}, 경도 ${pair.lon} · A 기록 ${pair.reported.length}건${pair.ambiguous?' · A 다중 후보 검토':''}${pair.spatialReview?' · 공간 검토 표시 있음':''}`;
+ $('aDates').textContent=`${fmt(a.start)} ~ ${fmt(a.end)} KST · 종료일 ${data.events[pair.a].anchor.slice(0,10)}`;
+ $('bDates').textContent=`${fmt(b.start)} ~ ${fmt(b.end)} KST · 종료일 ${data.events[pair.b].anchor.slice(0,10)}`;
+ metrics('aMetrics',a);metrics('bMetrics',b);await Promise.all([draw('aPlot',a,'a',ceiling,pair),draw('bPlot',b,'b',ceiling,pair)]);
+ $('prev').disabled=+$('pair').value===0;$('next').disabled=+$('pair').value===stationPairs.length-1;
+ window.viewerState={station:pair.stn,pair:pair.id,mode:$('mode').value,aHours:a.v.length,bHours:b.v.length,aMissing:a.v.filter(x=>x===null).length,bMissing:b.v.filter(x=>x===null).length};}
+async function changeStation(){stationPairs=data.pairs.filter(p=>p.stn===+$('station').value);$('pair').replaceChildren();
+ stationPairs.forEach((p,i)=>{let o=document.createElement('option');o.value=i;o.textContent=`${p.unit} · A ${data.events[p.a].anchor.slice(0,10)} / B ${data.events[p.b].anchor.slice(0,10)}`;$('pair').append(o);});await renderPair();await histogram();}
+async function init(){try{const bytes=Uint8Array.from(atob('__PAYLOAD__'),c=>c.charCodeAt(0));const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));data=JSON.parse(await new Response(stream).text());
+ const counts=new Map();for(const p of data.pairs)counts.set(p.stn,(counts.get(p.stn)||0)+1);
+ for(const stn of [...counts.keys()].sort((a,b)=>a-b)){let o=document.createElement('option');o.value=stn;o.textContent=`STN ${stn} · ${counts.get(stn)}쌍`;$('station').append(o);}
+ $('inventory').textContent=`${data.stationCount}개 STN · ${data.pairCount.toLocaleString()}개 A–B 쌍\n강우 확인 ${data.asOf.slice(0,16).replace('T',' ')} KST`;
+ $('loading').hidden=true;$('app').hidden=false;
+ $('station').onchange=changeStation;$('pair').onchange=renderPair;$('mode').onchange=async()=>{await renderPair();await histogram();};$('scale').onchange=renderPair;
+ for(const [id,step]of [['prev',-1],['next',1]])$(id).onclick=()=>{let v=+$('pair').value+step;if(v>=0&&v<stationPairs.length){$('pair').value=v;renderPair();}};
+ await changeStation();window.viewerReady=true;
+ }catch(e){$('loading').textContent='자료 표시 실패: '+e.message;window.viewerError=e.message;console.error(e);}}
+init();
+</script></body></html>

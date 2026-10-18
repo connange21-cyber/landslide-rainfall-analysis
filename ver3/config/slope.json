@@ -1,0 +1,17 @@
+{
+  "dem_root": "/data/DEM_5m",
+  "target_crs": "EPSG:5186",
+  "vertical_scale_to_m": 1.0,
+  "vertical_unit_confirmation": "2026-10-07 사용자 확인: DEM 표고 단위는 m",
+  "method": "HORN_3X3",
+  "block_size": 512,
+  "thresholds_deg": [
+    20,
+    30,
+    40
+  ],
+  "boundary_pixel_rule": "PIXEL_CENTER",
+  "missing_neighborhood": "REQUIRE_ALL_9_VALID",
+  "header_workers": 4,
+  "header_executor": "process"
+}

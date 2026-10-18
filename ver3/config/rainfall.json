@@ -1,0 +1,14 @@
+{
+  "rain_root": "/data/RAIN_DATAS/지상관측",
+  "research_start": "2020-01-01",
+  "wet_mm": 1.0,
+  "dry_split_hours": 12,
+  "unknown_split_hours": 12,
+  "cumulative_days": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
+  "point_max_distance_m": 15000,
+  "distance_tie_m": 0.01,
+  "area_tie": 1e-7,
+  "rain_priority": ["AWS", "ASOS"],
+  "imputation": "NONE_OBSERVED_BASELINE",
+  "boundary_time_validity": "NOT_VERIFIED"
+}

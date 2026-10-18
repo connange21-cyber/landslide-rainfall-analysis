@@ -1,0 +1,11 @@
+{
+  "b_time_scope": "ALL_AVAILABLE_YEARS",
+  "seed": 42,
+  "b_per_a": 1,
+  "unique_b_key": ["SPATIAL_UNIT_ID", "END_DATE"],
+  "same_station_coordinates": "EXACT_LAT_LON",
+  "known_landslide_exclusion": "EVENT_AND_REFERENCE_CALENDAR_DAY",
+  "trigger_rain_exclusion": "ALL_SAME_STN_LINKED_CANDIDATES_EVENT_AND_15DAY_WINDOW",
+  "label": "NO_REPORTED_LANDSLIDE",
+  "status": "PROVISIONAL_UNTIL_RAIN_RECALCULATION_AND_C_SELECTION"
+}
