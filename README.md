@@ -1,38 +1,84 @@
-# Landslide ver3
+# 강우·지형 정보를 활용한 산사태 발생 기록 분석
 
-산사태 발생 기록, 시간강우, 행정구역, 경사 및 토지피복을 연결하는 연구 코드입니다.
-이 저장소는 코드·일반 설정·설명만 보관합니다. 원자료·결과·로그·개인 경로·인증정보는 포함하지 않습니다.
+발생 시점과 위치의 해상도가 낮은 산사태 기록을 활용하여 **강우·경사·토지피복 변수의 상대적 중요도를 분석하고, 강우 임계값 산정 시 고려할 변수와 누적 강우기간을 탐색**하는 연구다. 모델의 분류 성능과 SHAP 기여도를 함께 분석한다.
 
-## 현재 상태
+최신 학습·TEST 재현 패키지는 [experiments/16_model_comparison](experiments/16_model_comparison/)에 있다. 가공된 입력 파일을 포함하며, 원 산사태 목록·원 DEM·개인 경로·인증정보는 포함하지 않는다. 초기 자료 구축 코드는 기존 `ver3/codes/`에 보존한다.
 
-- 원본 산사태 기록별 대표 강우 이벤트를 최대 하나 선택했습니다. 정확한 시각이 있는 기록은 해당 시각, 기간 기록은 기간 내 최대 시간강우 규칙을 사용하며 미확정 사례는 별도 보존합니다.
-- 현재 A/B/C는 각각 1,612개입니다. B는 같은 구역의 다른 이벤트, C는 같은 이벤트 시간대의 다른 구역이며 0 라벨은 미포착을 의미합니다.
-- C의 격자 미연결 67개를 교체했습니다. 현재 ABC 모두 종료일 포함 15일 강우 360시간을 확보했습니다.
-- WAMIS 최근접 지점 후보는 2,910개 행정구역에 연결했으며 모두 미확정입니다.
-- 모델 학습은 아직 수행하지 않았습니다.
+## 실행
 
-## 폴더와 실행
+Python 3.13.5 환경에서 검증했다. Jupyter를 사용하는 경우 아래 의존성을 설치한 환경을 커널로 선택한다.
 
-코드 폴더는 `단계번호_작업명` 형식이며, 단계 번호와 개별 파일명은 유지합니다. 단계 설명은 `ver3/readme.md`를 참조하세요.
-`ver3/base`, `ver3/output`, `ver3/log` 및 외부 RAIN_DATAS/DEM은 로컬에 별도 준비해야 합니다.
-로컬 데이터가 없으면 전체 파이프라인을 실행할 수 없습니다.
+```bash
+python -m pip install -r experiments/16_model_comparison/requirements.txt
+cd experiments/16_model_comparison
+python training.py --model xgboost --case ABC
+```
 
-업로드 사본의 개인 절대경로는 `/data/project`, `/data/RAIN_DATAS`, `/data/DEM_5m`으로 일반화했습니다.
-실행 전 설정과 코드의 이 일반 경로들을 실제 로컬 경로에 맞추세요. 인증키는 기존 코드의 환경변수 또는 숨김 입력을 사용하세요.
-강우 원자료는 RAIN_DATAS 표준 Parquet 형식으로 추가·로드하고, 실행/QC/API 로그는 별도 log 폴더에 저장합니다.
-이전 단계 산출물과 원본은 후속 단계에서 읽기 전용으로 다룹니다.
+모델별 실행 노트북 5개는 패키지의 [notebooks/](experiments/16_model_comparison/notebooks/)에 있다. 모두 가공 파일에서 독립적으로 시작하여 **학습 → VALID 확인 → 고정 TEST 평가 → SHAP**를 실행한다. 실행 결과는 `ver3/output/16/model_release/10_model_comparison/`, 실행·QC·오류 로그는 대응하는 `ver3/log/`에 저장한다.
 
-현재 기준 입력은 A/B=`output/13/full/01_abc_rebuild`, C=`output/13/full/03_c_grid_replacement`입니다.
-기존 통합표와 그래프가 자동으로 새 기준을 읽는 것은 아니므로 실행 코드의 입력을 확인하세요.
+## 비교 모델과 입력
 
-## 해석과 검증 범위
+| 실행 모델 | 최종 입력 수 | 구성 |
+| --- | ---: | --- |
+| `xgboost` | 26 | 누적 강우·경사·토지피복 → XGBoost |
+| `catboost` | 26 | 같은 기본 변수 → CatBoost |
+| `terramind4_rf` | 30 | 기본26 + 학습된 DEM 압축특징4 → RF |
+| `terramind16_rf` | 42 | 기본26 + 학습된 DEM 압축특징16 → RF |
+| `terramind384_rf` | 410 | 기본26 + 고정 TerraMind DEM특징384 → RF |
 
-이벤트 종료일 기준 강우에는 산사태 이후 시간이 포함될 수 있어 현재 자료는 실시간 조기경보 입력이 아닙니다.
-강우 단위 보정은 원 NetCDF의 data_scale을 적용했습니다. 공유 hourly Parquet의 과거 단위 문제는 별도 복구가 필요하며 기존 값 전체를 일괄 나누면 안 됩니다.
-경사·피복 수치 통합은 새 C 구역과 연도로 다시 연결해야 합니다.
-비공개 데이터가 필요하므로 업로드 사본에서는 구문·정보노출 검사만 수행하고 전체 분석은 재실행하지 않았습니다.
+기본26변수는 **1–15일 누적 융합강우15개, 경사4개, 토지피복 면적비율7개**다. 최대시우량은 입력에서 제외했다. 독립 MLP 분류기는 포함하지 않는다. 4·16특징은 별도 보조 신경망으로 압축하여 만든 특징이며, 최종 분류기는 RF다. 사전학습 TerraMind 본체는 고정했고 배포한 DEM384 캐시를 사용하므로 원 DEM 전체를 재추론하거나 TerraMind 가중치를 다운로드할 필요가 없다.
 
-보안·업로드 제외 정책은 `SECURITY.md`를 참조하세요. 이 사본은 자동 동기화되지 않으며 후속 변경마다 다시 점검해야 합니다.
+## A·B·C 데이터는 어떻게 만들었나
+
+2021–2025년 산림청·한국도로공사 산사태 기록을 법정리 또는 읍·면·동에 연결하고, AWS·ASOS 강우로 나눈 대표 강우 이벤트와 연결했다. 정확한 발생 시각이 없는 기록은 기록 기간의 최대 시간융합강우 시각을 이용하여 대표 이벤트를 추정하고 불명확한 경우는 미확정으로 남겼다. 이 **표본 연결 규칙**과 최대시우량을 **모델 변수**로 사용하는 것은 구분한다.
+
+| 유형 | 표본 구축 | 학습 라벨 |
+| --- | --- | ---: |
+| A: 발생 기록 | 산사태 발생 기록이 연결된 행정구역·대표 강우 이벤트. 같은 구역·이벤트의 원 기록은 묶음 | 1 |
+| B: 시간 대조 | A와 같은 구역에서 선택한 다른 강우 이벤트. 알려진 발생 기간·관련 이벤트와 겹치는 후보 제외 | 0 |
+| C: 공간 대조 | A의 이벤트 시간대를 유지하고 다른 구역 선택. 알려진 발생 기록·관련 이벤트 및 공간자료 QC 확인 | 0 |
+
+A 한 개와 B·C 각 한 개를 `TRIPLET_ID`로 연결했다. **B·C의 0은 발생 기록 미포착을 뜻하며 실제 미발생이 확정된 표본은 아니다.** 최종 1,612묶음·4,836행이다. 상세 이벤트 구분, 대표 이벤트 선택, 대조군 제외 기준은 [연구 방법](experiments/16_model_comparison/README.md)과 [데이터 설명](experiments/16_model_comparison/DATA.md)을 따른다.
+
+## 데이터와 평가 기준
+
+가공 입력은 [samples.xlsx](experiments/16_model_comparison/data/processed/samples.xlsx)와 [DEM 특징 Parquet](experiments/16_model_comparison/data/processed/dem_embeddings.parquet)으로 제공한다. 엑셀 `Samples` 시트에 표본키·라벨·원 분할·기본26변수·QC, `Dictionary` 시트에 열 설명과 단위를 담았다. 파일 SHA-256은 [manifest.json](experiments/16_model_comparison/data/processed/manifest.json)에 기록했다.
+
+- TRAIN 966묶음·2,898행, VALID 322묶음·966행, 원 TEST 322묶음·966행, HOLD 2묶음·6행.
+- 같은 A·B·C 묶음과 같은 구역의 중첩 강우 창을 같은 분할에 배정했다. 다른 구역의 같은 강우사건은 분할 사이에 남을 수 있다.
+- TEST 비교는 DEM 미확보 부귀리 1묶음을 공통 제외한 **321묶음·963행**이다. `COMMON_TEST_INCLUDED`에 표시하고 원 분할·제외 사유를 보존했다.
+- 전처리·가중치는 TRAIN에서 학습한다. 압축기만 VALID BCE로 epoch를 선택한다. 판정 기준은 0.5를 유지하며 TEST에서 조정하지 않는다.
+- [성능표](experiments/16_model_comparison/reports/metrics.csv)는 AP·ROC-AUC·Accuracy·Precision·Recall·F1과 혼동행렬을 VALID·TEST로 구분한다.
+
+## 결과
+
+실행 결과와 변수별 중요도는 [실험 패키지의 reports/](experiments/16_model_comparison/reports/)에 저장한다. 최신 수치는 아래 재현 평가 표와 `reports/metrics.csv`를 따른다.
+
+| 모델 | TEST AP | TEST ROC-AUC | TEST Accuracy |
+| --- | ---: | ---: | ---: |
+| XGBoost (26) | 0.9205 | 0.9555 | 89.72% |
+| CatBoost (26) | 0.9172 | 0.9563 | 89.51% |
+| TerraMind4 + RF (30) | 0.9160 | 0.9520 | 88.58% |
+| TerraMind16 + RF (42) | 0.9085 | 0.9481 | 89.30% |
+| TerraMind384 + RF (410) | 0.8881 | 0.9348 | 88.16% |
+
+![ABC TEST 모델 비교](experiments/16_model_comparison/reports/model_comparison.png)
+
+위 표는 제공 데이터에서 재학습·평가한 고정 설정의 ABC 결과다. 기본 XGBoost의 AP가 가장 높았고, 384개 DEM 특징을 그대로 연결한 RF보다 4·16차원 압축형 RF의 TEST AP가 높았다. 이 차이의 유의성이나 외부 일반화는 별도 검증하지 않았다.
+
+다섯 모델 모두 TEST SHAP에서 **이벤트 종료일을 포함한 2일 누적강우량(`FUSION_02D_MM`)**의 평균 절대 기여도가 가장 높았다. 이는 발생 시각 직전의 정확한48시간 강우나 인과효과를 뜻하지 않는다. [변수별 중요도](experiments/16_model_comparison/reports/feature_importance.csv)와 [상위10개 비교 그림](experiments/16_model_comparison/reports/shap_top10.png)을 함께 확인한다.
+
+## 해석 범위
+
+발생 위치와 시점의 해상도가 낮아 사건 단위의 **발생 기록 분류 및 변수 중요도 탐색**을 수행했다. 강우 입력에는 이벤트 종료일 전체가 포함되어 실제 발생 후 강우가 들어갈 수 있으므로 실시간 사전 예측 성능으로 해석하지 않는다. 표본의 양성 비율1/3은 실제 전체 지역의 발생률이 아니다.
+
+SHAP는 예측 점수에 대한 기여도이며 원인의 인과효과나 강우 임계값 자체가 아니다. 누적 강우 변수 사이의 상관성과 토지피복·경계 시점의 불확실성을 함께 고려한다. 이미 여러 차례 확인한 TEST를 재사용한 탐색 비교이며, 새로운 연도·지역 일반화와 작은 성능 차이의 유의성은 추가 검증이 필요하다.
+
+## 자료 출처와 프로젝트 구성
+
+자료 제공기관과 이용 조건은 [DATA.md](experiments/16_model_comparison/DATA.md#원자료-출처와-권리), 업로드 범위는 [SECURITY.md](SECURITY.md)를 따른다. 코드와 데이터·모델의 권리를 구분하며 원자료의 재배포 권한이나 새로운 라이선스를 임의로 부여하지 않는다.
+
+공유 구조는 [Cookiecutter Data Science](https://cookiecutter-data-science.drivendata.org/)의 데이터·노트북·코드·보고서 분리 방식을 참고했다. 기존 전처리 코드의 일반 경로 `/data/project`, `/data/RAIN_DATAS`, `/data/DEM_5m`은 로컬 환경에 맞춰 준비해야 한다. **최신 실험 패키지의 모델 재현은 제공한 가공 파일만으로 실행**하며 앞선 전체 원자료 파이프라인의 재실행은 필요하지 않다.
 
 ## 단계별 코드 폴더
 
