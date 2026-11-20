@@ -10,4 +10,4 @@
 *.png binary
 
 # Preserve the manifest bytes referenced by run provenance.
-experiments/16_model_comparison/data/processed/manifest.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+experiments/model_comparison/data/processed/manifest.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

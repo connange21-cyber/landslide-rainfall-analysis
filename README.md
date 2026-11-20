@@ -2,19 +2,28 @@
 
 발생 시점과 위치의 해상도가 낮은 산사태 기록을 활용하여 **강우·경사·토지피복 변수의 상대적 중요도를 분석하고, 강우 임계값 산정 시 고려할 변수와 누적 강우기간을 탐색**하는 연구다. 모델의 분류 성능과 SHAP 기여도를 함께 분석한다.
 
-최신 학습·TEST 재현 패키지는 [experiments/16_model_comparison](experiments/16_model_comparison/)에 있다. 가공된 입력 파일을 포함하며, 원 산사태 목록·원 DEM·개인 경로·인증정보는 포함하지 않는다. 초기 자료 구축용 실행 스크립트는 `ver3/scripts/`에 보존하며, 상세 과정은 [전처리 문서](ver3/readme.md)에서 확인할 수 있다.
+최신 학습·TEST 재현 패키지는 [experiments/model_comparison](experiments/model_comparison/)에 있다. 가공된 입력 파일을 포함하며, 원 산사태 목록·원 DEM·개인 경로·인증정보는 포함하지 않는다. 자료 구축용 실행 스크립트는 `scripts/`에 보존하며, 상세 과정은 [전처리 문서](docs/preprocessing.md)에서 확인할 수 있다.
+
+## 프로젝트 구성
+
+```text
+scripts/                       원자료 전처리
+config/                        전처리 설정
+docs/                          자료 구축 방법
+experiments/model_comparison/  모델 학습·TEST·SHAP와 가공 데이터
+```
 
 ## 실행
 
 Python 3.13.5 환경에서 검증했다. Jupyter를 사용하는 경우 아래 의존성을 설치한 환경을 커널로 선택한다.
 
 ```bash
-python -m pip install -r experiments/16_model_comparison/requirements.txt
-cd experiments/16_model_comparison
+python -m pip install -r experiments/model_comparison/requirements.txt
+cd experiments/model_comparison
 python training.py --model xgboost --case ABC
 ```
 
-모델별 실행 노트북 5개는 패키지의 [notebooks/](experiments/16_model_comparison/notebooks/)에 있다. 모두 가공 파일에서 독립적으로 시작하여 **학습 → VALID 확인 → 고정 TEST 평가 → SHAP**를 실행한다. 실행 결과는 `ver3/output/16/model_release/10_model_comparison/`, 실행·QC·오류 로그는 대응하는 `ver3/log/`에 저장한다.
+모델별 실행 노트북 5개는 패키지의 [notebooks/](experiments/model_comparison/notebooks/)에 있다. 모두 가공 파일에서 독립적으로 시작하여 **학습 → VALID 확인 → 고정 TEST 평가 → SHAP**를 실행한다. 실행 결과는 `output/model_comparison/`, 실행·QC·오류 로그는 대응하는 `log/`에 저장한다.
 
 ## 비교 모델과 입력
 
@@ -38,21 +47,21 @@ python training.py --model xgboost --case ABC
 | B: 시간 대조 | A와 같은 구역에서 선택한 다른 강우 이벤트. 알려진 발생 기간·관련 이벤트와 겹치는 후보 제외 | 0 |
 | C: 공간 대조 | A의 이벤트 시간대를 유지하고 다른 구역 선택. 알려진 발생 기록·관련 이벤트 및 공간자료 QC 확인 | 0 |
 
-A 한 개와 B·C 각 한 개를 `TRIPLET_ID`로 연결했다. **B·C의 0은 발생 기록 미포착을 뜻하며 실제 미발생이 확정된 표본은 아니다.** 최종 1,612묶음·4,836행이다. 상세 이벤트 구분, 대표 이벤트 선택, 대조군 제외 기준은 [연구 방법](experiments/16_model_comparison/README.md)과 [데이터 설명](experiments/16_model_comparison/DATA.md)을 따른다.
+A 한 개와 B·C 각 한 개를 `TRIPLET_ID`로 연결했다. **B·C의 0은 발생 기록 미포착을 뜻하며 실제 미발생이 확정된 표본은 아니다.** 최종 1,612묶음·4,836행이다. 상세 이벤트 구분, 대표 이벤트 선택, 대조군 제외 기준은 [연구 방법](experiments/model_comparison/README.md)과 [데이터 설명](experiments/model_comparison/DATA.md)을 따른다.
 
 ## 데이터와 평가 기준
 
-가공 입력은 [samples.xlsx](experiments/16_model_comparison/data/processed/samples.xlsx)와 [DEM 특징 Parquet](experiments/16_model_comparison/data/processed/dem_embeddings.parquet)으로 제공한다. 엑셀 `Samples` 시트에 표본키·라벨·원 분할·기본26변수·QC, `Dictionary` 시트에 열 설명과 단위를 담았다. 파일 SHA-256은 [manifest.json](experiments/16_model_comparison/data/processed/manifest.json)에 기록했다.
+가공 입력은 [samples.xlsx](experiments/model_comparison/data/processed/samples.xlsx)와 [DEM 특징 Parquet](experiments/model_comparison/data/processed/dem_embeddings.parquet)으로 제공한다. 엑셀 `Samples` 시트에 표본키·라벨·원 분할·기본26변수·QC, `Dictionary` 시트에 열 설명과 단위를 담았다. 파일 SHA-256은 [manifest.json](experiments/model_comparison/data/processed/manifest.json)에 기록했다.
 
 - TRAIN 966묶음·2,898행, VALID 322묶음·966행, 원 TEST 322묶음·966행, HOLD 2묶음·6행.
 - 같은 A·B·C 묶음과 같은 구역의 중첩 강우 창을 같은 분할에 배정했다. 다른 구역의 같은 강우사건은 분할 사이에 남을 수 있다.
 - TEST 비교는 DEM 미확보 부귀리 1묶음을 공통 제외한 **321묶음·963행**이다. `COMMON_TEST_INCLUDED`에 표시하고 원 분할·제외 사유를 보존했다.
 - 전처리·가중치는 TRAIN에서 학습한다. 압축기만 VALID BCE로 epoch를 선택한다. 판정 기준은 0.5를 유지하며 TEST에서 조정하지 않는다.
-- [성능표](experiments/16_model_comparison/reports/metrics.csv)는 AP·ROC-AUC·Accuracy·Precision·Recall·F1과 혼동행렬을 VALID·TEST로 구분한다.
+- [성능표](experiments/model_comparison/reports/metrics.csv)는 AP·ROC-AUC·Accuracy·Precision·Recall·F1과 혼동행렬을 VALID·TEST로 구분한다.
 
 ## 결과
 
-실행 결과와 변수별 중요도는 [실험 패키지의 reports/](experiments/16_model_comparison/reports/)에 저장한다. 최신 수치는 아래 재현 평가 표와 `reports/metrics.csv`를 따른다.
+실행 결과와 변수별 중요도는 [실험 패키지의 reports/](experiments/model_comparison/reports/)에 저장한다. 최신 수치는 아래 재현 평가 표와 `reports/metrics.csv`를 따른다.
 
 | 모델 | TEST AP | TEST ROC-AUC | TEST Accuracy |
 | --- | ---: | ---: | ---: |
@@ -62,11 +71,11 @@ A 한 개와 B·C 각 한 개를 `TRIPLET_ID`로 연결했다. **B·C의 0은 �
 | TerraMind16 + RF (42) | 0.9085 | 0.9481 | 89.30% |
 | TerraMind384 + RF (410) | 0.8881 | 0.9348 | 88.16% |
 
-![ABC TEST 모델 비교](experiments/16_model_comparison/reports/model_comparison.png)
+![ABC TEST 모델 비교](experiments/model_comparison/reports/model_comparison.png)
 
 위 표는 제공 데이터에서 재학습·평가한 고정 설정의 ABC 결과다. 기본 XGBoost의 AP가 가장 높았고, 384개 DEM 특징을 그대로 연결한 RF보다 4·16차원 압축형 RF의 TEST AP가 높았다. 이 차이의 유의성이나 외부 일반화는 별도 검증하지 않았다.
 
-다섯 모델 모두 TEST SHAP에서 **이벤트 종료일을 포함한 2일 누적강우량(`FUSION_02D_MM`)**의 평균 절대 기여도가 가장 높았다. 이는 발생 시각 직전의 정확한48시간 강우나 인과효과를 뜻하지 않는다. [변수별 중요도](experiments/16_model_comparison/reports/feature_importance.csv)와 [상위10개 비교 그림](experiments/16_model_comparison/reports/shap_top10.png)을 함께 확인한다.
+다섯 모델 모두 TEST SHAP에서 **이벤트 종료일을 포함한 2일 누적강우량(`FUSION_02D_MM`)**의 평균 절대 기여도가 가장 높았다. 이는 발생 시각 직전의 정확한48시간 강우나 인과효과를 뜻하지 않는다. [변수별 중요도](experiments/model_comparison/reports/feature_importance.csv)와 [상위10개 비교 그림](experiments/model_comparison/reports/shap_top10.png)을 함께 확인한다.
 
 ## 해석 범위
 
@@ -76,6 +85,6 @@ SHAP는 예측 점수에 대한 기여도이며 원인의 인과효과나 강우
 
 ## 자료 출처와 프로젝트 구성
 
-자료 제공기관과 이용 조건은 [DATA.md](experiments/16_model_comparison/DATA.md#원자료-출처와-권리), 업로드 범위는 [SECURITY.md](SECURITY.md)를 따른다. 코드와 데이터·모델의 권리를 구분하며 원자료의 재배포 권한이나 새로운 라이선스를 임의로 부여하지 않는다.
+자료 제공기관과 이용 조건은 [DATA.md](experiments/model_comparison/DATA.md#원자료-출처와-권리), 업로드 범위는 [SECURITY.md](SECURITY.md)를 따른다. 코드와 데이터·모델의 권리를 구분하며 원자료의 재배포 권한이나 새로운 라이선스를 임의로 부여하지 않는다.
 
 공유 구조는 [Cookiecutter Data Science](https://cookiecutter-data-science.drivendata.org/)의 데이터·노트북·코드·보고서 분리 방식을 참고했다. 기존 전처리 코드의 일반 경로 `/data/project`, `/data/RAIN_DATAS`, `/data/DEM_5m`은 로컬 환경에 맞춰 준비해야 한다. **최신 실험 패키지의 모델 재현은 제공한 가공 파일만으로 실행**하며 앞선 전체 원자료 파이프라인의 재실행은 필요하지 않다.

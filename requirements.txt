@@ -1,3 +1,4 @@
+# Data preparation dependencies; model requirements are in experiments/model_comparison/.
 numpy
 pandas
 pyarrow
