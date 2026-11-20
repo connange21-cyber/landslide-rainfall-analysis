@@ -26,7 +26,7 @@ def main():
     paths=[selected/n for n in ['occurrence_selected.parquet','b_event_selected.parquet','c_event_selected.parquet']]
     paths.append(V3/'output/10/full/01_fusion_hourly/admin_grid_links.parquet')
     inputs={str(p):stamp(p) for p in paths}
-    decoder_path=V3/'codes/10_융합강우_수집/01_collect_fusion_hourly_fixed.py'
+    decoder_path=V3/'scripts/10_융합강우_수집/01_collect_fusion_hourly_fixed.py'
     inputs[str(decoder_path)]=stamp(decoder_path)
     spec=importlib.util.spec_from_file_location('verified_fusion_decoder',decoder_path)
     decoder=importlib.util.module_from_spec(spec);spec.loader.exec_module(decoder)

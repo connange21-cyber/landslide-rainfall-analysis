@@ -43,7 +43,7 @@ def main():
         V3/'output/03/full/landslide_rainfall_candidates.parquet',V3/'output/03/full/rainfall_events.parquet',
         V3/'output/04/full/landslide_end_date_features.parquet',V3/'output/04/full/admin_rain_event_features.parquet',
         V3/'output/04/full/spatial_units_5186.parquet',V3/'output/10/full/01_fusion_hourly/admin_grid_links.parquet',
-        Path('/data/RAIN_DATAS/융합기상/INT/grid.parquet'),V3/'codes/10_융합강우_수집/01_collect_fusion_hourly_fixed.py',
+        Path('/data/RAIN_DATAS/융합기상/INT/grid.parquet'),V3/'scripts/10_융합강우_수집/01_collect_fusion_hourly_fixed.py',
         V3/'output/08/full/15_abc_selection/occurrence_selected.parquet',
         V3/'output/08/full/15_abc_selection/b_event_selected.parquet',V3/'output/08/full/15_abc_selection/c_event_selected.parquet',
         V3/'output/11/full/01_rainfall_summary/abc_fusion_rainfall.parquet']

@@ -17,7 +17,7 @@ from common import V3, fingerprint, write_json
 
 
 def current_rain(config,stations,dates,history):
-    spec=importlib.util.spec_from_file_location('rain_schema',V3/'codes/2_시간강우_구축/02_build_rainfall.py')
+    spec=importlib.util.spec_from_file_location('rain_schema',V3/'scripts/2_시간강우_구축/02_build_rainfall.py')
     module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
     parts={};sources=[];root=Path(config['rain_root'])
     for network in ['AWS','ASOS']:

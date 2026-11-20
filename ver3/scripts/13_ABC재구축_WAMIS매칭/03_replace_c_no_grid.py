@@ -32,8 +32,8 @@ def main():
     started = time.time()
     OUT.mkdir(parents=True, exist_ok=True)
     LOG.mkdir(parents=True, exist_ok=True)
-    sampler = load_module('original_c_sampler', V3 / 'codes/7_공간비교표본_C/01_sample_spatial_controls.py')
-    decoder = load_module('fusion_decoder', V3 / 'codes/10_융합강우_수집/01_collect_fusion_hourly_fixed.py')
+    sampler = load_module('original_c_sampler', V3 / 'scripts/7_공간비교표본_C/01_sample_spatial_controls.py')
+    decoder = load_module('fusion_decoder', V3 / 'scripts/10_융합강우_수집/01_collect_fusion_hourly_fixed.py')
     root = V3 / 'output/13/full/01_abc_rebuild'
     paths = [root/'occurrence_selected.parquet', root/'c_event_selected.parquet',
              V3/'output/04/full/spatial_units_5186.parquet',

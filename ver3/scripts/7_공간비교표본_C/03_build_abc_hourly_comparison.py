@@ -23,7 +23,7 @@ def main():
     assert a.index.is_unique and b.index.is_unique and c.index.is_unique
     assert set(a.index)==set(b.index)==set(c.index)
     config=json.loads(paths[3].read_text(encoding='utf-8'));history=pd.read_excel(paths[4],sheet_name='location_history')
-    spec=importlib.util.spec_from_file_location('rain_view_source',V3/'codes/6_시간비교표본_B/04_build_hourly_comparison.py')
+    spec=importlib.util.spec_from_file_location('rain_view_source',V3/'scripts/6_시간비교표본_B/04_build_hourly_comparison.py')
     loader=importlib.util.module_from_spec(spec);spec.loader.exec_module(loader)
     pairs=[];series={};obs={};dates=set();stations=set()
     for aid,r in a.sort_index().iterrows():

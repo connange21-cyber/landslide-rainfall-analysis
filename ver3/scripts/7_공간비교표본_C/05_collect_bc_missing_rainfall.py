@@ -18,7 +18,7 @@ from common import V3, fingerprint, write_json
 
 
 def helpers():
-    spec=importlib.util.spec_from_file_location('canonical_rain_collector',V3/'codes/6_시간비교표본_B/02_collect_missing_rainfall.py')
+    spec=importlib.util.spec_from_file_location('canonical_rain_collector',V3/'scripts/6_시간비교표본_B/02_collect_missing_rainfall.py')
     module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
     return module
 
@@ -264,7 +264,7 @@ def main():
     plan=build_plan(required,history,root,api)
     api.atomic_parquet(plan,out/'collection_plan.parquet')
     run=dict(status='PLANNED',started=pd.Timestamp.now(tz='Asia/Seoul').isoformat(),
-        inputs=[fingerprint(p) for p in [audit,historypath,configpath,Path(__file__),V3/'codes/6_시간비교표본_B/02_collect_missing_rainfall.py']],
+        inputs=[fingerprint(p) for p in [audit,historypath,configpath,Path(__file__),V3/'scripts/6_시간비교표본_B/02_collect_missing_rainfall.py']],
         absent_only=True,original_nulls_skipped=True,original_location_exclusions_skipped=True,
         station_days=len(plan),original_unique_hours=int(plan.ORIGINAL_ABSENT_HOURS.sum()),
         history_review_hours=int(plan.HISTORY_OR_COORDINATE_REVIEW_HOURS.sum()),
